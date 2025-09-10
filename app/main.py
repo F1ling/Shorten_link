@@ -6,11 +6,16 @@ import secrets
 import datetime
 from typing import Dict
 import re
+from pathlib import Path
 
-app = FastAPI(title="Сервис сокращения ссылок")
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = BASE_DIR / "templates"
 
+app = FastAPI(title="Сервис сокращения ссылок", version="1.0.0")
 
-templates = Jinja2Templates(directory="shortener-service/app/templates")
+# Инициализируем шаблоны с правильным путем
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
 
 # Хранилище ссылок в памяти
 url_storage: Dict[str, dict] = {}
@@ -67,7 +72,7 @@ async def redirect_url(short_code: str):
 @app.get("/", response_class=HTMLResponse)
 async def home_page(request: Request):
     #Главная страница с формой
-    return templates.TemplateResponse("base.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 if __name__ == "__main__":
     import uvicorn
