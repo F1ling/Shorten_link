@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Сокращатель ссылок</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+        }
+        .container { 
+            padding: 30px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        input[type="url"] { 
+            width: 70%; 
+            padding: 10px; 
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            padding: 10px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0069d9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Сократить ссылку</h1>
+        <form onsubmit="shortenUrl(event)">
+            <input type="url" id="urlInput" placeholder="Введите URL" required>
+            <button type="submit">Сократить</button>
+        </form>
+        <div id="error" class="error"></div>
+        <div id="result">
+            <p>Короткая ссылка: <a id="shortLink" target="_blank"></a></p>
+            <p>Действует 24 часа</p>
+        </div>
+    </div>
+
+    <script>
+        async function shortenUrl(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            
+            errorDiv.textContent = '';
+            resultDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Произошла ошибка');
+                }
+                
+                const data = await response.json();
+                const shortLink = document.getElementById('shortLink');
+                shortLink.href = data.short_url;
+                shortLink.textContent = window.location.origin + data.short_url;
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                errorDiv.textContent = error.message;
+            }
+        }
+    </script>
+</body>
+</html>
